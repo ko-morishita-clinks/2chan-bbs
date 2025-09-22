@@ -1,5 +1,8 @@
 <?php
+  session_start();
   include_once('./app/database/connect.php');
+
+  include("app/functions/comment_add.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">

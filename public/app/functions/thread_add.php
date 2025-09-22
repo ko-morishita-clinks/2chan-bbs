@@ -27,22 +27,31 @@ if (isset($_POST['threadSubmitButton'])) {
 
   if (empty($error_message)) {
     $post_date = date("Y-m-d H:i:s");
-    $sql = "INSERT INTO `thread` (`title`) VALUES (:title);";
-    $statement = $dbh->prepare($sql);
 
-    $statement->bindParam(":title", $escaped["title"], PDO::PARAM_STR);
+    //トランザクション開始
+    $dbh->beginTransaction();
 
-    $statement->execute();
+    try {
+      $sql = "INSERT INTO `thread` (`title`) VALUES (:title);";
+      $statement = $dbh->prepare($sql);
 
-    $sql = "INSERT INTO comment (username, body, post_date, thread_id) VALUES (:username, :body, :post_date,  (SELECT id FROM thread WHERE title = :title))";
-    $statement = $dbh->prepare($sql);
+      $statement->bindParam(":title", $escaped["title"], PDO::PARAM_STR);
 
-    $statement->bindParam(":username", $escaped["username"], PDO::PARAM_STR);
-    $statement->bindParam(":body", $escaped["body"], PDO::PARAM_STR);
-    $statement->bindParam(":post_date", $post_date, PDO::PARAM_STR);
-    $statement->bindParam(":title", $escaped["title"], PDO::PARAM_STR);
+      $statement->execute();
 
-    $statement->execute();
+      $sql = "INSERT INTO comment (username, body, post_date, thread_id) VALUES (:username, :body, :post_date,  (SELECT id FROM thread WHERE title = :title))";
+      $statement = $dbh->prepare($sql);
+
+      $statement->bindParam(":username", $escaped["username"], PDO::PARAM_STR);
+      $statement->bindParam(":body", $escaped["body"], PDO::PARAM_STR);
+      $statement->bindParam(":post_date", $post_date, PDO::PARAM_STR);
+      $statement->bindParam(":title", $escaped["title"], PDO::PARAM_STR);
+
+      $statement->execute();
+      $dbh->commit();
+    } catch (Exception $e) {
+      $dbh->rollBack();
+    }
   }
 
     header("Location: /");

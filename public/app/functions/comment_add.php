@@ -1,5 +1,4 @@
 <?php
-
 $error_message = [];
 
 if (isset($_POST['submitButton'])) {
@@ -9,6 +8,7 @@ if (isset($_POST['submitButton'])) {
     $error_message['username'] = 'お名前を入力してください。';
   } else {
     $escaped['username'] = htmlspecialchars($_POST['username'], ENT_QUOTES, 'UTF-8');
+    $_SESSION["username"] = $escaped["username"];
   }
 
   // コメント入力チェック
@@ -19,16 +19,25 @@ if (isset($_POST['submitButton'])) {
   }
 
   if (empty($error_message)) {
-    $post_date = date("Y-m-d H:i:s");
-    $sql = "INSERT INTO `comment` (`username`, `body`, `post_date`, `thread_id`) VALUES (:username, :body, :post_date, :thread_id)";
-    $statement = $dbh->prepare($sql);
+    //トランザクション開始
+    $dbh->beginTransaction();
 
-    $statement->bindParam(":username", $escaped["username"], PDO::PARAM_STR);
-    $statement->bindParam(":body", $escaped["body"], PDO::PARAM_STR);
-    $statement->bindParam(":post_date", $post_date, PDO::PARAM_STR);
-    $statement->bindParam(":thread_id", $_POST['threadID'], PDO::PARAM_STR);
+    try {
+      $post_date = date("Y-m-d H:i:s");
+      $sql = "INSERT INTO `comment` (`username`, `body`, `post_date`, `thread_id`) VALUES (:username, :body, :post_date, :thread_id)";
+      $statement = $dbh->prepare($sql);
 
-    $statement->execute();
+      $statement->bindParam(":username", $escaped["username"], PDO::PARAM_STR);
+      $statement->bindParam(":body", $escaped["body"], PDO::PARAM_STR);
+      $statement->bindParam(":post_date", $post_date, PDO::PARAM_STR);
+      $statement->bindParam(":thread_id", $_POST['threadID'], PDO::PARAM_STR);
+
+      $statement->execute();
+      $dbh->commit();
+    } catch (Exception $error) {
+      $dbh->rollBack();
+    }
+
   }
 
 }
