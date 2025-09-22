@@ -15,4 +15,6 @@ function db_connect() {
     }
 }
 
+$dbh = db_connect();
+
 ?>

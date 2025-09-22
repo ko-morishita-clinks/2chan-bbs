@@ -1,9 +1,5 @@
 <?php
   include_once('./app/database/connect.php');
-  $dbh = db_connect();
-
-  include("app/functions/comment_add.php");
-  include("app/functions/comment_get.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,5 +13,6 @@
   <?php include("app/parts/header.php"); ?>
   <?php include("app/parts/validation.php"); ?>
   <?php include("app/parts/thread.php"); ?>
+  <?php include("app/parts/newThreadButton.php"); ?>
 </body>
 </html>
